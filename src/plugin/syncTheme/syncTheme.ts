@@ -5,8 +5,14 @@ import {
   PluginDataKeys,
   Slices,
 } from '../../_shared/constants';
-import { Controller } from '../../_shared/types/contoller';
-import { getVariantCombinations, createInstances, setRefs, saveCurrentBoxVariants } from '../utils/utils';
+import { Controller } from '../../_shared/types/controller';
+import {
+  getVariantCombinations,
+  createBoxInstances,
+  setRefs,
+  saveCurrentBoxVariants,
+  BoxVariant,
+} from '../utils/utils';
 import {
   ErrorMap,
   ErrorType,
@@ -67,7 +73,7 @@ export const syncTheme: Controller = () => {
   const { existentRadiusSlices, newRadiusSlices } = syncRadiiVariants(radiiFrame, errorMap);
   const { existentBorderWidthSlices, newBorderWidthSlices } = syncBorderWidthVariants(borderWidthsFrame, errorMap);
 
-  const newRadiiCombinations = getVariantCombinations([
+  const newRadiiCombinations = getVariantCombinations<BoxVariant>([
     { sliceName: Slices.Radius, styleKey: 'cornerRadius', variants: newRadiusSlices },
     {
       sliceName: Slices.BorderWidth,
@@ -76,7 +82,7 @@ export const syncTheme: Controller = () => {
     },
   ]);
 
-  const newBorderWithCombinations = getVariantCombinations([
+  const newBorderWithCombinations = getVariantCombinations<BoxVariant>([
     { sliceName: Slices.Radius, styleKey: 'cornerRadius', variants: { ...existentRadiusSlices, ...newRadiusSlices } },
     {
       sliceName: Slices.BorderWidth,
@@ -85,7 +91,7 @@ export const syncTheme: Controller = () => {
     },
   ]);
 
-  const newBoxVariants = createInstances([...newRadiiCombinations, ...newBorderWithCombinations]);
+  const newBoxVariants = createBoxInstances([...newRadiiCombinations, ...newBorderWithCombinations]);
 
   // add the new variants to the Box component
   newBoxVariants.instances.map((newBoxVariant) => boxComponent.appendChild(newBoxVariant));

@@ -23,6 +23,7 @@ export const mockCreatePage: jest.Mock;
 export const mockCreateRectangle: jest.Mock;
 export const mockCreateFrame: jest.Mock;
 export const mockCreateLine: jest.Mock;
+export const mockCreateText: jest.Mock;
 export const mockCombineAsVariants: jest.Mock;
 export const mockClosePlugin: jest.Mock;
 export const mockRootChildren: { [string]: string }[];

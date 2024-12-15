@@ -60,6 +60,7 @@ const nodeBase = {
   resize: jest.fn(),
   setSharedPluginData: jest.fn(),
   getSharedPluginData: jest.fn(),
+  remove: jest.fn(),
 };
 
 module.exports.mockGetNodeById = jest.fn();
@@ -70,6 +71,7 @@ module.exports.mockCreatePage = jest.fn(() => nodeBase);
 module.exports.mockCreateRectangle = jest.fn(() => nodeBase);
 module.exports.mockCreateFrame = jest.fn(() => nodeBase);
 module.exports.mockCreateLine = jest.fn(() => nodeBase);
+module.exports.mockCreateText = jest.fn(() => nodeBase);
 module.exports.mockCombineAsVariants = jest.fn(() => nodeBase);
 module.exports.mockClosePlugin = jest.fn();
 
@@ -114,6 +116,7 @@ module.exports.figma = {
   createRectangle: module.exports.mockCreateRectangle,
   createFrame: module.exports.mockCreateFrame,
   createLine: module.exports.mockCreateLine,
+  createText: module.exports.mockCreateText,
   combineAsVariants: module.exports.mockCombineAsVariants,
   closePlugin: module.exports.mockClosePlugin,
 };

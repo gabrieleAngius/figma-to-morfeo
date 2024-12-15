@@ -1,12 +1,15 @@
-import { mockGetNodeById } from '../../../__mocks__/figmaMock';
+import { mockCreateText, mockGetNodeById } from '../../../__mocks__/figmaMock';
 import { mockNode } from '../../../__mocks__/mockUtils';
 import { PLUGIN_DATA_NAMESPACE, PluginDataKeys, Slices } from '../../_shared/constants';
 import {
-  createInstances,
+  createBoxInstances,
   deleteNodesById,
+  generateTextSlices,
   getVariantCombinations,
+  parseTextStyles,
   saveCurrentBoxVariants,
   setRefs,
+  sortValues,
   updateVariantName,
 } from './utils';
 
@@ -70,7 +73,7 @@ describe('createInstances', () => {
       { name: 'Radius=S, Border width=Y', cornerRadius: 1, strokeWeight: 2, ciao: 2 },
     ];
 
-    const { instances, refIds } = createInstances(combinations);
+    const { instances, refIds } = createBoxInstances(combinations as any);
 
     expect(refIds).toEqual({
       Radius: {
@@ -145,5 +148,98 @@ describe('saveCurrentBoxVariants', () => {
       PluginDataKeys.currentRadiiVariants,
       JSON.stringify(refIds)
     );
+  });
+});
+
+describe('sortValues', () => {
+  it('should sort values as expected', () => {
+    const res = sortValues([12, 'auto', 1, 4, 0]);
+    expect(res).toEqual(['auto', 0, 1, 4, 12]);
+  });
+});
+
+describe('parseTextStyles', () => {
+  it('should return parsed styles as expected', () => {
+    mockCreateText.mockReturnValueOnce({ fontWeight: 400, remove: jest.fn() });
+    mockCreateText.mockReturnValue({ fontWeight: 800, remove: jest.fn() });
+
+    const input = [
+      {
+        fontSize: 16,
+        fontName: { family: 'Inter', style: 'Bold' },
+        letterSpacing: { unit: 'PIXELS', value: 10 },
+        lineHeight: { unit: 'PIXELS', value: 10 },
+      },
+      {
+        fontSize: 16,
+        fontName: { family: 'Inter', style: 'Regular' },
+        letterSpacing: { unit: 'PIXELS', value: 10 },
+        lineHeight: { unit: 'AUTO' },
+      },
+      {
+        fontSize: 14,
+        fontName: { family: 'Inter', style: 'Regular' },
+        letterSpacing: { unit: 'PERCENT', value: 5 },
+        lineHeight: { unit: 'AUTO' },
+      },
+      {
+        fontSize: 14,
+        fontName: { family: 'Inter', style: 'Regular' },
+        letterSpacing: { unit: 'PERCENT', value: 0 },
+        lineHeight: { unit: 'AUTO' },
+      },
+      {
+        fontSize: 14,
+        fontName: { family: 'Inter', style: 'Regular' },
+        letterSpacing: { unit: 'PERCENT', value: 0 },
+        lineHeight: { unit: 'PERCENT', value: 3 },
+      },
+    ] as TextStyle[];
+
+    const result = parseTextStyles(input);
+
+    expect(result).toEqual({
+      [Slices.Fonts]: [
+        { family: 'Inter', style: 'Bold' },
+        { family: 'Inter', style: 'Regular' },
+      ],
+      [Slices.FontSizes]: { absolute: { xs: 14, s: 16 } },
+      [Slices.FontWeights]: { absolute: { xs: 400, s: 800 } },
+      [Slices.LetterSpacings]: {
+        absolute: {
+          xs: 10,
+        },
+        relative: {
+          none: 0,
+          sRelative: 5,
+        },
+      },
+      [Slices.LineHeights]: {
+        absolute: {
+          xs: 10,
+        },
+        relative: {
+          auto: 'auto',
+          sRelative: 3,
+        },
+      },
+    });
+  });
+});
+
+describe('generateTextSlices', () => {
+  it('should call getNewFrame for each variant', () => {
+    generateTextSlices({
+      [Slices.LineHeights]: {
+        absolute: { xs: 10 },
+        relative: { sRelative: 4 },
+      },
+      [Slices.Fonts]: [],
+      [Slices.FontSizes]: { absolute: {} },
+      [Slices.FontWeights]: { absolute: {} },
+      [Slices.LetterSpacings]: { absolute: {} },
+    });
+
+    expect(mockCreateText).toBeCalled();
   });
 });

@@ -5,11 +5,21 @@ import {
   PLUGIN_DATA_NAMESPACE,
   PluginDataKeys,
 } from '../../_shared/constants';
-import { Controller } from '../../_shared/types/contoller';
-import { createBorderWidthSlices, createRadiiSlices } from '../generateTheme/utils';
-import { getNewFrame, getVariantCombinations, createInstances, setRefs, saveCurrentBoxVariants } from '../utils/utils';
+import { Controller } from '../../_shared/types/controller';
+import { createBorderWidthSlices, createRadiiSlices, generateTextStyles } from '../generateTheme/utils';
+import {
+  getNewFrame,
+  getVariantCombinations,
+  createBoxInstances,
+  setRefs,
+  saveCurrentBoxVariants,
+  BoxVariant,
+  parseTextStyles,
+  generateTextSlices,
+} from '../utils/utils';
+import { defaultTheme } from './defaultTheme';
 
-export const createMorfeoTheme: Controller = () => {
+export const createMorfeoTheme: Controller = async () => {
   const themePage = figma.root.children.find((node) => node.name === THEME_PAGE_NAME);
   if (themePage) {
     figma.notify(`The '${THEME_PAGE_NAME}' page already exist`, { error: true, timeout: 5000 });
@@ -20,27 +30,29 @@ export const createMorfeoTheme: Controller = () => {
   page.name = THEME_PAGE_NAME;
   figma.currentPage = page;
 
-  const radiiSlices = createRadiiSlices({ S: 3, M: 6, L: 10 });
+  const radiiSlices = createRadiiSlices(defaultTheme[Slices.Radius]);
   const radiiFrame = getNewFrame(SliceFrameNames.Radius);
   radiiSlices.map((radiiSlice) => radiiFrame.appendChild(radiiSlice));
-  radiiFrame.resize(380, 140);
 
-  const borderWidthSlices = createBorderWidthSlices({ none: 0, XS: 0.5, S: 1, M: 2, L: 3 });
+  const borderWidthSlices = createBorderWidthSlices(defaultTheme[Slices.BorderWidth]);
   const borderWidthFrame = getNewFrame(SliceFrameNames.BorderWidth, { previousElement: radiiFrame });
   borderWidthSlices.map((borderWidthSlice) => borderWidthFrame.appendChild(borderWidthSlice));
-  borderWidthFrame.resize(620, 140);
 
-  const box = getNewFrame('Box', { previousElement: borderWidthFrame });
+  const { textStylesFrame, textStyles } = generateTextStyles(borderWidthFrame);
+  const parsedTextStyles = parseTextStyles(textStyles);
+  const lastTextFrame = generateTextSlices(parsedTextStyles, textStylesFrame);
 
-  const combinations = getVariantCombinations([
-    { sliceName: Slices.Radius, styleKey: 'cornerRadius', variants: { S: 3, M: 6, L: 10 } },
+  const box = getNewFrame('Box', { previousElement: lastTextFrame });
+
+  const boxCombinations = getVariantCombinations<BoxVariant>([
+    { sliceName: Slices.Radius, styleKey: 'cornerRadius', variants: defaultTheme[Slices.Radius] },
     {
       sliceName: Slices.BorderWidth,
       styleKey: 'strokeWeight',
-      variants: { none: 0, XS: 0.5, S: 1, M: 2, L: 3 },
+      variants: defaultTheme[Slices.BorderWidth],
     },
   ]);
-  const boxVariants = createInstances(combinations);
+  const boxVariants = createBoxInstances(boxCombinations);
   const boxComponent = figma.combineAsVariants(boxVariants.instances, box);
 
   // set the ref ids

@@ -1,5 +1,5 @@
 import { ActionTypes } from '../../_shared/types/actions';
-import { Controller } from '../../_shared/types/contoller';
+import { Controller } from '../../_shared/types/controller';
 import { colorNormalizer } from '../../_shared/utils/normalizers';
 
 export const generateTheme: Controller = () => {

@@ -24,7 +24,7 @@ export const mockFindOne = jest.fn(() => ({
   },
 }));
 
-export const spyCreateInstance = jest.spyOn(GlobalUtils, 'createInstances');
+export const spyCreateInstance = jest.spyOn(GlobalUtils, 'createBoxInstances');
 export const mockAppendChild = jest.fn();
 
 export const mockDefaultPage = mockNode({
